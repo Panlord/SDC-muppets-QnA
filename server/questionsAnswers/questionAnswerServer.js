@@ -3,6 +3,7 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config();
+const QnARouter = require('./questionAnswerRoutes.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,8 +13,6 @@ app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
 app.get('/test', (request, response) => {
   response.send('It works!!');
 });
-
-const QnARouter = require('./questionAnswerRoutes.js');
 
 app.use('/qa', QnARouter);
 
