@@ -1,4 +1,10 @@
 // Server file for Question and Answers section of the backend
+// REQUIRED NPM MODULES
+// node-pg
+// express
+// mongoose
+// dotenv
+// jest
 
 const express = require('express');
 const path = require('path');
