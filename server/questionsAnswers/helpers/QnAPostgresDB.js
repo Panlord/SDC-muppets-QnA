@@ -23,7 +23,7 @@ const getAllQuestions = (productId) => {
     'helpfulness', helpfulness,
     'reported', reported,
     'answers', (
-      SELECT JSON_OBJECT_AGG (answer_id, JSON_BUILD_OBJECT (
+      SELECT COALESCE(JSON_OBJECT_AGG (answer_id, JSON_BUILD_OBJECT (
         'id', answer_id,
         'body', answer_body,
         'date', answer_date,
@@ -35,7 +35,7 @@ const getAllQuestions = (productId) => {
           FROM photos
           WHERE photos.answer_id=answers.answer_id
         )
-      ))
+      )), '{}')
       FROM answers
       WHERE answers.question_id=questions.question_id
     )

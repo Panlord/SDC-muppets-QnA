@@ -144,7 +144,7 @@ SELECT JSON_OBJECT_AGG (answer_id, JSON_BUILD_OBJECT (
   )
 ))
 FROM answers
-WHERE answers.question_id=1;
+WHERE answers.question_id=1 AND answers.reported=false;
 /* Put this inside the query for questions^^^^ */
 
 /* Get single question with answers and photos DONE */
@@ -198,6 +198,35 @@ SELECT ARRAY_AGG (JSON_BUILD_OBJECT (
         WHERE photos.answer_id=answers.answer_id
       )
     ))
+    FROM answers
+    WHERE answers.question_id=questions.question_id
+  )
+)) AS results
+FROM questions
+WHERE questions.product_id=1 AND questions.reported=false;
+
+/* Same as above but if answers=null, it is replaced with an empty object */
+SELECT ARRAY_AGG (JSON_BUILD_OBJECT (
+  'question_id', questions.question_id,
+  'question_body', question_body,
+  'question_date', question_date,
+  'asker_name', asker_name,
+  'helpfulness', helpfulness,
+  'reported', reported,
+  'answers', (
+    SELECT COALESCE(JSON_OBJECT_AGG (answer_id, JSON_BUILD_OBJECT (
+      'id', answer_id,
+      'body', answer_body,
+      'date', answer_date,
+      'answerer_name', answerer_name,
+      'helpfulness', helpfulness,
+      'reported', reported,
+      'photos', (
+        SELECT COALESCE(ARRAY_AGG (photo_url), array[]::varchar[])
+        FROM photos
+        WHERE photos.answer_id=answers.answer_id
+      )
+    )), '{}')
     FROM answers
     WHERE answers.question_id=questions.question_id
   )
