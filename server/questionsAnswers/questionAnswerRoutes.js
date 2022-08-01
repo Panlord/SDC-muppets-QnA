@@ -11,6 +11,7 @@ QnARouter.get('/questions', (request, response) => {
     .then((results) => {
       // NEED TO FORMAT THE RESULTS HERE BEFORE SENDING
       response.send(results.rows);
+      // results.rows gives an array of objects where each object is a quesstion
     })
     .catch((error) => {
       response.status(500).send(error);
