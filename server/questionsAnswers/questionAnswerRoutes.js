@@ -9,15 +9,16 @@ const QnAAPI = require('./helpers/QnAPostgresDB.js');
 QnARouter.get('/questions', (request, response) => {
   QnAAPI.getAllQuestions(request.query.product_id)
     .then((results) => {
-      // NEED TO FORMAT THE RESULTS HERE BEFORE SENDING
-      response.send(results.rows);
-      // results.rows gives an array of objects where each object is a quesstion
+      // results.rows = [] of objects of objects; has key results, value = [] of question objects
+      const queryResults = {
+        product_id: request.query.product_id,
+        results: results.rows[0].results,
+      };
+      response.send(queryResults);
     })
     .catch((error) => {
       response.status(500).send(error);
     });
-
-    // NEED TO ADD THE ANSWERS INTO THE RESPONSE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 });
 
 // POST a question for a particular product
