@@ -36,8 +36,15 @@ QnARouter.put('/questions', (request, response) => {
 });
 
 // GET all the answers for a given question
-QnARouter.get('/answers', (request, response) => {
-
+QnARouter.get('/questions/:question_id/answers', (request, response) => {
+  QnAAPI.getAllAnswers(request.params.question_id)
+    .then((results) => {
+      response.send(results.rows[0].array_agg);
+      // NEED TO ADD PAGINATION
+    })
+    .catch((error) => {
+      response.status(500).send(error);
+    });
 });
 
 // POST an answer for a particular product
