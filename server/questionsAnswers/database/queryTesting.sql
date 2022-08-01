@@ -233,3 +233,12 @@ SELECT ARRAY_AGG (JSON_BUILD_OBJECT (
 )) AS results
 FROM questions
 WHERE questions.product_id=1 AND questions.reported=false;
+
+/* Add photo(s) to a given answer */
+INSERT INTO photos (photo_url, answer_id)
+VALUES ('https://images.unsplash.com/photo-1659369016472-5e52b8e5e008?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80', 7);
+
+/* Add an answer to a given question */
+INSERT INTO answers (answer_body, answer_date, answerer_name, answerer_email, question_id)
+VALUES ('TESTING ANSWER!!!!!', now(), 'Anthony', 'FatAnthony@gmail.com', 1)
+RETURNING answer_id;
