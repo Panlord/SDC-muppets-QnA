@@ -19,34 +19,39 @@ const pool = new Pool({
 ////////////////////////
 
 // Function to get all the questions for a specific product
-const getAllQuestions = (productId) => {
-  const queryString = `SELECT ARRAY_AGG (JSON_BUILD_OBJECT (
-    'question_id', questions.question_id,
-    'question_body', question_body,
-    'question_date', question_date,
-    'asker_name', asker_name,
-    'helpfulness', helpfulness,
-    'reported', reported,
-    'answers', (
-      SELECT COALESCE(JSON_OBJECT_AGG (answer_id, JSON_BUILD_OBJECT (
-        'id', answer_id,
-        'body', answer_body,
-        'date', answer_date,
-        'answerer_name', answerer_name,
-        'helpfulness', helpfulness,
-        'reported', reported,
-        'photos', (
-          SELECT COALESCE(ARRAY_AGG (photo_url), array[]::varchar[])
-          FROM photos
-          WHERE photos.answer_id=answers.answer_id
-        )
-      )), '{}')
-      FROM answers
-      WHERE answers.question_id=questions.question_id
-    )
-  )) AS results
-  FROM questions
-  WHERE questions.product_id=${productId} AND questions.reported=false;`;
+const getAllQuestions = (product_id, page = 1, count = 5) => {
+  const queryString = `SELECT ARRAY_AGG(results)
+  FROM (
+    SELECT JSON_BUILD_OBJECT (
+      'question_id', questions.question_id,
+      'question_body', question_body,
+      'question_date', question_date,
+      'asker_name', asker_name,
+      'helpfulness', helpfulness,
+      'reported', reported,
+      'answers', (
+        SELECT JSON_OBJECT_AGG (answer_id, JSON_BUILD_OBJECT (
+          'id', answer_id,
+          'body', answer_body,
+          'date', answer_date,
+          'answerer_name', answerer_name,
+          'helpfulness', helpfulness,
+          'reported', reported,
+          'photos', (
+            SELECT COALESCE(ARRAY_AGG (photo_url), array[]::varchar[])
+            FROM photos
+            WHERE photos.answer_id=answers.answer_id
+          )
+        ))
+        FROM answers
+        WHERE answers.question_id=questions.question_id
+      )
+    ) AS results
+    FROM questions
+    WHERE questions.product_id=${product_id} AND questions.reported=false
+    LIMIT ${count}
+    OFFSET ${(page - 1) * count}
+  ) AS results;`;
   return pool.query(queryString);
 };
 
@@ -58,22 +63,27 @@ const addQuestion = (data) => {
 };
 
 // Function to get the answers for a specific question
-const getAllAnswers = (questionId) => {
-  const queryString = `SELECT ARRAY_AGG(JSON_BUILD_OBJECT (
-    'id', answer_id,
-    'body', answer_body,
-    'date', answer_date,
-    'answerer_name', answerer_name,
-    'helpfulness', helpfulness,
-    'reported', reported,
-    'photos', (
-        SELECT COALESCE(ARRAY_AGG (photo_url), array[]::varchar[])
-        FROM photos
-        WHERE photos.answer_id=answers.answer_id
-      )
-  ))
-  FROM answers
-  WHERE answers.question_id=${questionId} AND answers.reported=false;`;
+const getAllAnswers = (question_id, page = 1, count = 5) => {
+  const queryString = `SELECT ARRAY_AGG (results)
+  FROM (
+    SELECT JSON_BUILD_OBJECT (
+      'id', answer_id,
+      'body', answer_body,
+      'date', answer_date,
+      'answerer_name', answerer_name,
+      'helpfulness', helpfulness,
+      'reported', reported,
+      'photos', (
+          SELECT COALESCE(ARRAY_AGG (photo_url), array[]::varchar[])
+          FROM photos
+          WHERE photos.answer_id=answers.answer_id
+        )
+    ) AS results
+    FROM answers
+    WHERE answers.question_id=${question_id} AND answers.reported=false
+    LIMIT ${count}
+    OFFSET ${(page - 1) * count}
+  ) AS results;`;
   return pool.query(queryString);
 };
 

@@ -1,15 +1,3 @@
-/* Join questions with answers on product_id 1; combine all answers into a json object  */
-SELECT questions.question_id, question_body, asker_name, asker_email, questions.helpfulness, questions.reported, product_id,
-  JSON_AGG (
-    (answer_id, answer_body, answer_date, answerer_name, answerer_email, answers.helpfulness, answers.reported))
-  answers
-FROM questions
-INNER JOIN answers
-ON questions.question_id=answers.question_id
-WHERE questions.product_id=1
-GROUP BY questions.question_id
-limit 30;
-
 /* Get single answer as key:answer_id value:JSONobj */
 SELECT JSON_BUILD_OBJECT (
   answer_id,
@@ -203,7 +191,9 @@ SELECT ARRAY_AGG (JSON_BUILD_OBJECT (
   )
 )) AS results
 FROM questions
-WHERE questions.product_id=1 AND questions.reported=false;
+WHERE questions.product_id=1 AND questions.reported=false
+LIMIT 1
+OFFSET 3;
 
 /* Same as above but if answers=null, it is replaced with an empty object */
 SELECT ARRAY_AGG (JSON_BUILD_OBJECT (
@@ -256,3 +246,86 @@ WHERE question_id=3518965;
 UPDATE answers
 SET reported = true
 WHERE answer_id=6879315;
+
+/* Getting questions with pagination */
+SELECT ARRAY_AGG(results)
+FROM (
+  SELECT JSON_BUILD_OBJECT (
+    'question_id', questions.question_id,
+    'question_body', question_body,
+    'question_date', question_date,
+    'asker_name', asker_name,
+    'helpfulness', helpfulness,
+    'reported', reported,
+    'answers', (
+      SELECT JSON_OBJECT_AGG (answer_id, JSON_BUILD_OBJECT (
+        'id', answer_id,
+        'body', answer_body,
+        'date', answer_date,
+        'answerer_name', answerer_name,
+        'helpfulness', helpfulness,
+        'reported', reported,
+        'photos', (
+          SELECT COALESCE(ARRAY_AGG (photo_url), array[]::varchar[])
+          FROM photos
+          WHERE photos.answer_id=answers.answer_id
+        )
+      ))
+      FROM answers
+      WHERE answers.question_id=questions.question_id
+    )
+  ) AS results
+  FROM questions
+  WHERE questions.product_id=1 AND questions.reported=false
+  LIMIT 1
+  OFFSET 2
+) AS results;
+
+/* Getting answers with pagination */
+/* This one is finicky */
+SELECT JSON_BUILD_OBJECT (
+  'results', (answer_data)
+)
+FROM (
+  SELECT ARRAY_AGG (results) AS results
+  FROM (
+    SELECT JSON_BUILD_OBJECT (
+      'id', answer_id,
+      'body', answer_body,
+      'date', answer_date,
+      'answerer_name', answerer_name,
+      'helpfulness', helpfulness,
+      'reported', reported,
+      'photos', (
+          SELECT COALESCE(ARRAY_AGG (photo_url), array[]::varchar[])
+          FROM photos
+          WHERE photos.answer_id=answers.answer_id
+        )
+    ) AS results
+    FROM answers
+    WHERE answers.question_id=1 AND answers.reported=false
+    LIMIT 2
+    OFFSET 1
+  ) AS all_answers
+) AS answer_data;
+/* Use this one */
+SELECT ARRAY_AGG (results) AS results
+  FROM (
+    SELECT JSON_BUILD_OBJECT (
+      'id', answer_id,
+      'body', answer_body,
+      'date', answer_date,
+      'answerer_name', answerer_name,
+      'helpfulness', helpfulness,
+      'reported', reported,
+      'photos', (
+          SELECT COALESCE(ARRAY_AGG (photo_url), array[]::varchar[])
+          FROM photos
+          WHERE photos.answer_id=answers.answer_id
+        )
+    ) AS results
+    FROM answers
+    WHERE answers.question_id=1 AND answers.reported=false
+    LIMIT 2
+    OFFSET 1
+  ) AS all_answers

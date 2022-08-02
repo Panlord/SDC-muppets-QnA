@@ -10,15 +10,14 @@ const QnAAPI = require('./helpers/QnAPostgresDB.js');
 
 // GET all the questions for a particular product
 QnARouter.get('/questions', (request, response) => {
-  QnAAPI.getAllQuestions(request.query.product_id)
+  QnAAPI.getAllQuestions(request.query.product_id, request.query.page, request.query.count)
     .then((results) => {
       // results.rows = [] of objects of objects; has key results, value = [] of question objects
       const queryResults = {
         product_id: request.query.product_id,
-        results: results.rows[0].results,
+        results: results.rows[0].array_agg,
       };
-      response.send(queryResults);
-      // NEED TO ADD PAGINATION
+      response.status(200).send(queryResults);
     })
     .catch((error) => {
       response.status(500).send(error);
@@ -66,10 +65,15 @@ QnARouter.put('/questions/:question_id/report', (request, response) => {
 
 // GET all the answers for a given question
 QnARouter.get('/questions/:question_id/answers', (request, response) => {
-  QnAAPI.getAllAnswers(request.params.question_id)
+  QnAAPI.getAllAnswers(request.params.question_id, request.query.page, request.query.count)
     .then((results) => {
-      response.send(results.rows[0].array_agg);
-      // NEED TO ADD PAGINATION
+      const allAnswerData = {
+        question: `${request.params.question_id}`,
+        page: request.query.page,
+        count: request.query.count,
+        results: results.rows[0].array_agg,
+      };
+      response.send(allAnswerData);
     })
     .catch((error) => {
       response.status(500).send(error);
