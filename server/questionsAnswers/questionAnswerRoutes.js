@@ -91,8 +91,14 @@ QnARouter.post('/questions/:question_id/answers', (request, response) => {
 });
 
 // PUT an update to +1 an answer's helpfulness
-QnARouter.put('/answers', (request, response) => {
-
+QnARouter.put('/answers/:answer_id/helpful', (request, response) => {
+  QnAAPI.helpfulnessAddOne('answers', request.params.answer_id)
+    .then(() => {
+      response.status(204).send();
+    })
+    .catch((error) => {
+      response.status(500).send(error);
+    });
 });
 
 // PUT a report on an answer
