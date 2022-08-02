@@ -27,7 +27,19 @@ QnARouter.get('/questions', (request, response) => {
 
 // POST a question for a particular product
 QnARouter.post('/questions', (request, response) => {
-
+  const questionData = {
+    body: request.bodt.body,
+    name: request.body.name,
+    email: request.body.email,
+    product_id: request.body.product_id,
+  };
+  QnAAPI.addQuestion(questionData)
+    .then(() => {
+      response.status(201).send();
+    })
+    .catch((error) => {
+      response.status(500).send(error);
+    });
 });
 
 // PUT an update to +1 a question's helpfulness

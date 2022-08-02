@@ -50,6 +50,13 @@ const getAllQuestions = (productId) => {
   return pool.query(queryString);
 };
 
+// Function to add a question for a specific product
+const addQuestion = (data) => {
+  const queryString = `INSERT INTO questions (question_body, question_date, asker_name, asker_email, product_id)
+  VALUES ('${data.body}', now(), '${data.name}', '${data.email}', ${data.product_id});`;
+  return pool.query(queryString);
+};
+
 // Function to get the answers for a specific question
 const getAllAnswers = (questionId) => {
   const queryString = `SELECT ARRAY_AGG(JSON_BUILD_OBJECT (
@@ -76,7 +83,6 @@ const addAnswer = (data) => {
   const queryString = `INSERT INTO answers (answer_body, answer_date, answerer_name, answerer_email, question_id)
   VALUES ('${data.body}', now(), '${data.name}', '${data.email}', ${data.question_id})
   RETURNING answer_id;`;
-  // const queryString = "INSERT INTO answers (answer_body, answer_date, answerer_name, answerer_email, question_id) VALUES ($1, now(), $2, $3, $4) RETURNING answer_id;";
   return pool.query(queryString);
 };
 
@@ -89,13 +95,13 @@ const addPhoto = (answer_id, photos) => {
   for (let i = 0; i < photos.length; i++) {
     values.push([answer_id, photos[i]]);
   }
-  console.log(format(queryString, values));
   return pool.query(format(queryString, values));
 };
 
 // Export helper functions
 module.exports = {
   getAllQuestions,
+  addQuestion,
   getAllAnswers,
   addAnswer,
   addPhoto,
