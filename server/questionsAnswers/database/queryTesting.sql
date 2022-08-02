@@ -234,15 +234,20 @@ SELECT ARRAY_AGG (JSON_BUILD_OBJECT (
 FROM questions
 WHERE questions.product_id=1 AND questions.reported=false;
 
-/* Add photo(s) to a given answer */
+/* Add photo(s) to a given answer DONE */
 INSERT INTO photos (photo_url, answer_id)
 VALUES ('https://images.unsplash.com/photo-1659369016472-5e52b8e5e008?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80', 6879316);
 
-/* Add an answer to a given question */
+/* Add an answer to a given question DONE */
 INSERT INTO answers (answer_body, answer_date, answerer_name, answerer_email, question_id)
 VALUES ('TESTING ANSWER~~~!!!!!', now(), 'Anthony', 'FatAnthony@gmail.com', 1)
 RETURNING answer_id;
 
-/* Add a question to a given product */
+/* Add a question to a given product DONE */
 INSERT INTO questions (question_body, question_date, asker_name, asker_email, product_id)
 VALUES ('TEST QUESTION!', now(), 'Antonio', 'Ant@inmyroom.com', 1);
+
+/* Helpfulness + 1 to question */
+UPDATE questions
+SET helpfulness = helpfulness + 1
+WHERE question_id=3518965;

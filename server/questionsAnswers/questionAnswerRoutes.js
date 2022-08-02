@@ -28,7 +28,7 @@ QnARouter.get('/questions', (request, response) => {
 // POST a question for a particular product
 QnARouter.post('/questions', (request, response) => {
   const questionData = {
-    body: request.bodt.body,
+    body: request.body.body,
     name: request.body.name,
     email: request.body.email,
     product_id: request.body.product_id,
@@ -43,8 +43,14 @@ QnARouter.post('/questions', (request, response) => {
 });
 
 // PUT an update to +1 a question's helpfulness
-QnARouter.put('/questions', (request, response) => {
-
+QnARouter.put('/questions/:question_id/helpful', (request, response) => {
+  QnAAPI.helpfulnessAddOne('questions', request.params.question_id)
+    .then(() => {
+      response.status(204).send();
+    })
+    .catch((error) => {
+      response.status(500).send(error);
+    });
 });
 
 // PUT a report on a question

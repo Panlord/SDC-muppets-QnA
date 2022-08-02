@@ -98,6 +98,21 @@ const addPhoto = (answer_id, photos) => {
   return pool.query(format(queryString, values));
 };
 
+// Function to update the helpfulness field of either a question or an answer, depending on input
+// Inputs: a string (question or answer) and a number (question/answer id)
+const helpfulnessAddOne = (questionOrAnswer, id) => {
+  let condition;
+  if (questionOrAnswer === 'questions') {
+    condition = `question_id=${id}`;
+  } else if (questionOrAnswer === 'answers') {
+    condition = `answer_id=${id}`;
+  }
+  const queryString = `UPDATE ${questionOrAnswer}
+  SET helpfulness = helpfulness + 1
+  WHERE ${condition};`;
+  return pool.query(queryString);
+};
+
 // Export helper functions
 module.exports = {
   getAllQuestions,
@@ -105,4 +120,5 @@ module.exports = {
   getAllAnswers,
   addAnswer,
   addPhoto,
+  helpfulnessAddOne,
 };
