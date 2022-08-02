@@ -54,8 +54,14 @@ QnARouter.put('/questions/:question_id/helpful', (request, response) => {
 });
 
 // PUT a report on a question
-QnARouter.put('/questions', (request, response) => {
-
+QnARouter.put('/questions/:question_id/report', (request, response) => {
+  QnAAPI.markReportedTrue('questions', request.params.question_id)
+    .then(() => {
+      response.status(204).send();
+    })
+    .catch((error) => {
+      response.status(500).send(error);
+    });
 });
 
 // GET all the answers for a given question
@@ -102,8 +108,14 @@ QnARouter.put('/answers/:answer_id/helpful', (request, response) => {
 });
 
 // PUT a report on an answer
-QnARouter.put('/answers', (request, response) => {
-
+QnARouter.put('/answers/:answer_id/report', (request, response) => {
+  QnAAPI.markReportedTrue('answers', request.params.answer_id)
+    .then(() => {
+      response.status(204).send();
+    })
+    .catch((error) => {
+      response.status(500).send(error);
+    });
 });
 
 // A POST request for testing purposes

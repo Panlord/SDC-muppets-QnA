@@ -99,7 +99,7 @@ const addPhoto = (answer_id, photos) => {
 };
 
 // Function to update the helpfulness field of either a question or an answer, depending on input
-// Inputs: a string (question or answer) and a number (question/answer id)
+// Inputs: a string (questions or answers) and a number (question/answer id)
 const helpfulnessAddOne = (questionOrAnswer, id) => {
   let condition;
   if (questionOrAnswer === 'questions') {
@@ -113,6 +113,21 @@ const helpfulnessAddOne = (questionOrAnswer, id) => {
   return pool.query(queryString);
 };
 
+// Function to update the reported field of a question/answer, depending on input
+// Inputs: a string (questions or answers) and a number (question/answer id)
+const markReportedTrue = (questionOrAnswer, id) => {
+  let condition;
+  if (questionOrAnswer === 'questions') {
+    condition = `question_id=${id}`;
+  } else if (questionOrAnswer === 'answers') {
+    condition = `answer_id=${id}`;
+  }
+  const queryString = `UPDATE ${questionOrAnswer}
+  SET reported = true
+  WHERE ${condition};`;
+  return pool.query(queryString);
+};
+
 // Export helper functions
 module.exports = {
   getAllQuestions,
@@ -121,4 +136,5 @@ module.exports = {
   addAnswer,
   addPhoto,
   helpfulnessAddOne,
+  markReportedTrue,
 };

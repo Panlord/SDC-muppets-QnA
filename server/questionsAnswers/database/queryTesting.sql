@@ -247,7 +247,12 @@ RETURNING answer_id;
 INSERT INTO questions (question_body, question_date, asker_name, asker_email, product_id)
 VALUES ('TEST QUESTION!', now(), 'Antonio', 'Ant@inmyroom.com', 1);
 
-/* Helpfulness + 1 to question */
+/* Helpfulness + 1 to question DONE */
 UPDATE questions
 SET helpfulness = helpfulness + 1
 WHERE question_id=3518965;
+
+/* Mark reported true DONE */
+UPDATE answers
+SET reported = true
+WHERE answer_id=6879315;
