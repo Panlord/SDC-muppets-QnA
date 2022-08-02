@@ -1,8 +1,13 @@
+/* eslint-disable prefer-const */
+/* eslint-disable no-plusplus */
+/* eslint-disable camelcase */
+/* eslint-disable quotes */
 /* eslint-disable spaced-comment */
 // Helper functions to query the Postgres database
 
 // Import stuff
 const { Pool } = require('pg');
+const format = require('pg-format');
 
 // Connect to the Postgres database
 const pool = new Pool({
@@ -65,8 +70,33 @@ const getAllAnswers = (questionId) => {
   return pool.query(queryString);
 };
 
+// Function to add an answer for a specific question
+// Input: an array of values: answer_body, answerer_name, answerer_email, question_id)
+const addAnswer = (data) => {
+  const queryString = `INSERT INTO answers (answer_body, answer_date, answerer_name, answerer_email, question_id)
+  VALUES ('${data.body}', now(), '${data.name}', '${data.email}', ${data.question_id})
+  RETURNING answer_id;`;
+  // const queryString = "INSERT INTO answers (answer_body, answer_date, answerer_name, answerer_email, question_id) VALUES ($1, now(), $2, $3, $4) RETURNING answer_id;";
+  return pool.query(queryString);
+};
+
+// Function to add a photo for a specific answer
+// Inputs: an answer_id (number) and a the photos (array of strings)
+const addPhoto = (answer_id, photos) => {
+  const queryString = `INSERT INTO photos (answer_id, photo_url)
+  VALUES %L;`;
+  let values = [];
+  for (let i = 0; i < photos.length; i++) {
+    values.push([answer_id, photos[i]]);
+  }
+  console.log(format(queryString, values));
+  return pool.query(format(queryString, values));
+};
+
 // Export helper functions
 module.exports = {
   getAllQuestions,
   getAllAnswers,
+  addAnswer,
+  addPhoto,
 };

@@ -1,8 +1,11 @@
+/* eslint-disable camelcase */
+/* eslint-disable max-len */
 // The routes for the QnA API
 
 // Import stuff
 require('dotenv').config();
 const QnARouter = require('express').Router();
+const format = require('pg-format');
 const QnAAPI = require('./helpers/QnAPostgresDB.js');
 
 // GET all the questions for a particular product
@@ -15,6 +18,7 @@ QnARouter.get('/questions', (request, response) => {
         results: results.rows[0].results,
       };
       response.send(queryResults);
+      // NEED TO ADD PAGINATION
     })
     .catch((error) => {
       response.status(500).send(error);
@@ -49,8 +53,23 @@ QnARouter.get('/questions/:question_id/answers', (request, response) => {
 });
 
 // POST an answer for a particular product
-QnARouter.post('/answers', (request, response) => {
-
+QnARouter.post('/questions/:question_id/answers', (request, response) => {
+  const answerData = {
+    body: request.body.body,
+    name: request.body.name,
+    email: request.body.email,
+    question_id: request.params.question_id,
+  };
+  // const answerData = [request.body.body, new Date(), request.body.name, request.body.email, parseInt(request.params.question_id, 10)];
+  QnAAPI.addAnswer(answerData)
+    .then((results) => results.rows[0].answer_id)
+    .then((answer_id) => QnAAPI.addPhoto(answer_id, request.body.photos))
+    .then(() => {
+      response.status(201).send();
+    })
+    .catch((error) => {
+      response.status(500).send(error);
+    });
 });
 
 // PUT an update to +1 an answer's helpfulness
@@ -70,6 +89,14 @@ QnARouter.post('/test/:id/all/:page', (request, response) => {
     page: request.params.page,
     body: request.body,
   };
+  const queryString = `INSERT INTO answers (answer_body, answer_date, answerer_name, answerer_email, question_id)
+  VALUES %L
+  RETURNING answer_id;`;
+  var values = [];
+  for (let i = 0; i < request.body.photos.length; i += 1) {
+    values.push([i, request.body.photos[i]]);
+  }
+  console.log(format(queryString, values));
   response.send(obj);
 });
 
